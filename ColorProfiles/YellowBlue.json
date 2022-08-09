@@ -1,0 +1,22 @@
+{
+  "color_settings": {
+    "colorpalette": [
+      [255, 255, 0],
+      [0, 0, 255]
+    ],
+    "saturation": 1,
+    "value": 1
+  },
+  "noise_settings": {
+    "speed": 50,
+    "feature_size": 100,
+    "seed": 3
+  },
+  "music_settings": {
+    "beat": false,
+    "color": [0, 0, 0]
+  },
+  "devices": {
+    "Keyboard":  "Roccat Vulcan 120 Aimo"
+  }
+}
