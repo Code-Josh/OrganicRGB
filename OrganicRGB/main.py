@@ -3,13 +3,13 @@ import opensimplex as simplex
 from openrgb import OpenRGBClient
 from openrgb.utils import DeviceType
 import time
-from math import pow, sqrt
+from math import sqrt
 import pygame
 import OrganicRGB.Devices as ORGBDevices
-from OrganicRGB.Helper import Sound, Color, Noise
+from OrganicRGB.Helper import Color, Noise, Sounds
 from numba import jit
 
-subdiv = 8
+subdiv = 4
 
 multiplication_vector = np.array((0.2989, 0.5870, 0.114), dtype=np.float64)
 
@@ -67,7 +67,8 @@ class main:
         self.cli = OpenRGBClient()
         self.devices = {}
         self.search_devices()
-        self.beat_helper = Sound.helper()
+        self.beat_helper = self.sound = Sound.Recorder(sample_rate=48000, record_length=12.5,
+                                 freq_division=[20, 350, 600, 4000, 6000, 8000, 12000])
 
     def set_case(self, h, w, d):
         self.case_height = h
@@ -146,35 +147,36 @@ class main:
 
     @jit(forceobj=True)
     def show2D(self, height, width):
-        pygame.init()
-        self.display = pygame.display.set_mode((width * 2, height * 2))
-        pygame.display.set_caption('2D RGB Preview')
+        """pygame.init()
+        self.display = pygame.display.set_mode((width * 4, height * 4))
+        pygame.display.set_caption('2D RGB Preview')"""
 
         perm = Noise.init(3)[0]
-
+        self.beat_helper.start()
         running = True
         while running:
             start_time = time.time()
             t = self.speed * (time.time() - self.start_time) / 100
             beat_power = 0
             if self.music['beat']:
-                self.beat_helper.mainloop()
-                beat_power, fft = self.beat_helper.get_last_data()
-            for event in pygame.event.get():
+                #self.beat_helper.mainloop()
+                beat_power, frequency_strengths = self.beat_helper.get_data()
+                beat_power = (beat_power*0.25)**0.5
+            """for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-            image = Noise.get_NoiseMatrix(width, height, subdiv, t, self.feature_size, self.color_channels, perm)
+            image = Noise.get_NoiseMatrix(width, height, subdiv, t, self.feature_size, self.color_channels, perm, beat_power=beat_power)
             image = Color.m_saturate(image, self.saturation, self.color_value)
             image = Color.m_correct_gamma(image, self.gamma_correction)
             image = Color.m_linear_to_srgb(image)
-            image = Color.m_normalize(image)
+            image = Color.m_normalize(image)"""
 
             self.update_Devices(t, perm, beat_power=beat_power)
-            surf = pygame.surfarray.make_surface(image)
-            surf = pygame.transform.scale(surf, (width * 2, height * 2))
+            """surf = pygame.surfarray.make_surface(image)
+            surf = pygame.transform.scale(surf, (width * 4, height * 4))
             self.display.blit(surf, (0, 0))
-            pygame.display.update()
+            pygame.display.update()"""
             delta_time = time.time() - start_time
             print(1/delta_time)
         pygame.quit()
